@@ -1,0 +1,41 @@
+---
+
+- name: download node_exporter
+  become: false
+  get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    checksum: "sha256:{{ node_exporter_checksum }}"
+  delegate_to: localhost
+  tags: node_exporter
+
+- name: unpack node_exporter
+  become: false
+  unarchive:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: "/tmp"
+    creates: "node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+  delegate_to: localhost
+  tags: node_exporter
+
+- name: copy node_exporter sysconfig options
+  template:
+    src: node_exporter
+    dest: /etc/sysconfig/node_exporter
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart node_exporter
+  tags: node_exporter
+
+- name: propagate node_exporter
+  copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+    dest: "/usr/local/sbin/node_exporter"
+    mode: 0755
+    owner: root
+    group: root
+  notify:
+    - restart node_exporter
+  tags: node_exporter

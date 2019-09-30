@@ -1,0 +1,17 @@
+---
+
+- name: copy node_exporter systemd service
+  copy:
+    src: node_exporter.service
+    dest: /etc/systemd/system/node_exporter.service
+    owner: root
+    group: root
+    mode: 0644
+  tags: node_exporter
+
+- name: enable node_exporter service
+  systemd:
+    name: node_exporter
+    daemon_reload: true
+    enabled: true
+  tags: node_exporter
